@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -26,6 +27,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import com.github.gotify.BuildConfig;
 import com.github.gotify.MissedMessageUtil;
+import com.github.gotify.NotificationSupport;
 import com.github.gotify.R;
 import com.github.gotify.Settings;
 import com.github.gotify.Utils;
@@ -185,6 +187,13 @@ public class MessagesActivity extends AppCompatActivity
                     .placeholder(R.drawable.ic_placeholder)
                     .resize(100, 100)
                     .into(t);
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                NotificationSupport.createChannel(
+                        (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE),
+                        app.getName(),
+                        String.format("gotify_%d", app.getId()));
+            }
         }
     }
 

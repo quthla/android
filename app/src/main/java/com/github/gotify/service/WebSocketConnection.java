@@ -184,8 +184,8 @@ public class WebSocketConnection {
                 NetworkInfo network = connectivityManager.getActiveNetworkInfo();
                 if (network == null || !network.isConnected()) {
                     Log.i("WebSocket: Network not connected");
-                    onDisconnect.run();
-                    return;
+                    // onDisconnect.run();
+                    // return;
                 }
 
                 int minutes = Math.min(errorCount * 2 - 1, 20);

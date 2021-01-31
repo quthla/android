@@ -2,6 +2,7 @@ package com.github.gotify.service;
 
 import android.app.AlarmManager;
 import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -203,13 +204,23 @@ public class WebSocketService extends Service {
         }
 
         broadcast(message);
+        String channel = String.format("gotify_%d", message.getAppid());
+        NotificationManager notificationManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
+                notificationManager.getNotificationChannel(channel) == null) {
+            NotificationSupport.createChannel(
+                    notificationManager,
+                    String.format("App %d", message.getAppid()),
+                    channel);
+        }
         showNotification(
                 message.getId(),
                 message.getTitle(),
                 message.getMessage(),
                 message.getPriority(),
                 message.getExtras(),
-                message.getAppid());
+                message.getAppid(),
+                channel);
     }
 
     private void broadcast(Message message) {
@@ -251,7 +262,7 @@ public class WebSocketService extends Service {
 
     private void showNotification(
             int id, String title, String message, long priority, Map<String, Object> extras) {
-        showNotification(id, title, message, priority, extras, -1L);
+        showNotification(id, title, message, priority, extras, -1L, NotificationSupport.Channel.MESSAGES_IMPORTANCE_HIGH);
     }
 
     private void showNotification(
@@ -260,7 +271,8 @@ public class WebSocketService extends Service {
             String message,
             long priority,
             Map<String, Object> extras,
-            Long appid) {
+            Long appid,
+            String channel) {
 
         Intent intent;
 
@@ -290,10 +302,10 @@ public class WebSocketService extends Service {
 
         NotificationCompat.Builder b =
                 new NotificationCompat.Builder(
-                        this, NotificationSupport.convertPriorityToChannel(priority));
+                        this, channel);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            showNotificationGroup(priority);
+            showNotificationGroup(channel);
         }
 
         b.setAutoCancel(true)
@@ -317,14 +329,14 @@ public class WebSocketService extends Service {
     }
 
     @RequiresApi(Build.VERSION_CODES.N)
-    public void showNotificationGroup(long priority) {
+    public void showNotificationGroup(String channel) {
         Intent intent = new Intent(this, MessagesActivity.class);
         PendingIntent contentIntent =
                 PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         NotificationCompat.Builder b =
                 new NotificationCompat.Builder(
-                        this, NotificationSupport.convertPriorityToChannel(priority));
+                        this, channel);
 
         b.setAutoCancel(true)
                 .setDefaults(Notification.DEFAULT_ALL)

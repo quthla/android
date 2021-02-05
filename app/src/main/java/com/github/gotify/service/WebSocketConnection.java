@@ -110,6 +110,7 @@ class WebSocketConnection {
     }
 
     public synchronized WebSocketConnection start() {
+        Log.i("start " + state);
         if (state == State.Connecting || state == State.Connected) {
             return this;
         }
@@ -123,6 +124,7 @@ class WebSocketConnection {
     }
 
     public synchronized void close() {
+        Log.i("close " + state);
         if (webSocket != null) {
             Log.i("WebSocket(" + ID.get() + "): closing existing connection.");
             state = State.Disconnected;
@@ -132,6 +134,7 @@ class WebSocketConnection {
     }
 
     public synchronized void scheduleReconnect(long seconds) {
+        Log.i("scheduleReconnect " + state);
         if (state == State.Connecting || state == State.Connected) {
             return;
         }
@@ -193,6 +196,7 @@ class WebSocketConnection {
 
         @Override
         public void onClosed(WebSocket webSocket, int code, String reason) {
+            Log.i("onClosed " + state);
             syncExec(
                     () -> {
                         if (state == State.Connected) {
